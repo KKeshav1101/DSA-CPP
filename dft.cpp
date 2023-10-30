@@ -80,7 +80,7 @@ class DFS{
 		ga* nn1=new ga;
 		nn1->adj=temp1;
 		nn1->link=temp2->firstarc;
-		temp2->firstarc=nn;
+		temp2->firstarc=nn1;
 	}
 	void DFT(){
 		Stack s;
