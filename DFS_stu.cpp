@@ -6,11 +6,10 @@ class Arc;
 class Vertex {
 public:
 	bool processed;
-	bool inQueue;
 	char data;
 	Vertex* next_vertex;
 	Arc* first_arc, * rear_arc;
-	Vertex(char data = '\0') : inQueue(false), processed(false), data(data), next_vertex(NULL), first_arc(NULL), rear_arc(NULL) {}
+	Vertex(char data = '\0') : processed(false), data(data), next_vertex(NULL), first_arc(NULL), rear_arc(NULL) {}
 };
 
 class Arc {
@@ -27,30 +26,36 @@ public:
 	Node(Vertex* data = NULL) : data(data), link(NULL) {}
 };
 
-class Queue {
-	Node* front, * rear;
+class Stack {
+	Node* top;
 public:
-	Queue() : front(NULL), rear(NULL) {}
-	bool empty() { return front ? false : true; }
-	void enqueue (Vertex* vertex) {
+	Stack() : top(NULL) {}
+	bool empty() { return top ? false : true; }
+	void push(Vertex* vertex) {
 		Node* temp = new Node(vertex);
-		if(front) rear->link = temp;
-		else front = temp;
-		rear = temp;
+		temp->link = top;
+		top = temp;
 	}
-	Vertex* dequeue() {
+	Vertex* pop() {
 		if (empty()) return NULL;
 		else {
-			Vertex* temp = front->data;
-			front = front->link;
+			Vertex* temp = top->data;
+			top = top->link;
 			return temp;
 		}
 	}
+	Vertex* peep() { return top->data; }
 };
 
 class Graph {
 	Vertex* first, *rear;
 	int count;
+	void process(int& nov, Stack& s, Vertex*& vertex) {
+		s.push(vertex);
+		nov++;
+		vertex->processed = true;
+		cout << vertex->data << "  ";
+	}
 public:
 	Graph() : first(NULL), rear(NULL), count(0) {}
 	void addVertex(char data) {
@@ -91,35 +96,32 @@ public:
 		}
 		cout << "NULL\n\n";
 	}
-	void BFT() {
+	void DFT(){
 		if (!first) {
 			cout << "Graph is empty\n\n";
 			return;
 		}
-		Queue q;
+		Stack s;
 		int nov = 0;
 		Vertex* vertex = first;
+		process(nov, s, vertex);
 		while (count != nov) {
-			for (vertex = first; vertex->processed; vertex = vertex->next_vertex);
-			if (!vertex->inQueue) {
-				q.enqueue(vertex);
-				vertex->inQueue = true;
+			Arc* temp = s.peep()->first_arc;
+			for (; temp && temp->vertex->processed; temp = temp->link);
+			if (temp) {
+				vertex = temp->vertex;
+				process(nov, s, vertex);
 			}
-			while (!q.empty()) {
-				vertex = q.dequeue();
-				vertex->inQueue = false;
-				vertex->processed = true;
-				cout << vertex->data << " ";
-				nov++;
-				for (Arc* arc = vertex->first_arc; arc; arc = arc->link) {
-					if (!arc->vertex->processed && !arc->vertex->inQueue) {
-						q.enqueue(arc->vertex);
-						arc->vertex->inQueue = true;
-					}
+			else {
+				vertex = s.pop();
+				if (s.empty()) {
+					vertex = first;
+					for (; vertex && vertex->processed; vertex = vertex->next_vertex);
+					if (vertex) process(nov, s, vertex);
 				}
 			}
 		}
-		cout<<"\n\n";
+		cout << "\n\n";
 	}
 };
 
@@ -131,7 +133,7 @@ int main() {
 	cout << "IMPLEMENTATION OF DEAPTH FIRST SEARCH IN A UNDIRECTED GRAPH\n";
 	cout << "-----------------------------------------------------------\n\n";
 	do {
-		cout << "MENU\n----\n\n1. INSERT VERTEX\n2. INSERT ARC\n3. DISPLAY ADJACENCY LIST\n4. BREADTH FIRST SEARCH\n5. EXIT\n\n";
+		cout << "MENU\n----\n\n1. INSERT VERTEX\n2. INSERT ARC\n3. DISPLAY ADJACENCY LIST\n4. DEAPTH FIRST SEARCH\n5. EXIT\n\n";
 		cout << "ENTER OPTION : "; cin >> opt; cout << endl;
 		switch (opt) {
 		case 1:
@@ -151,7 +153,7 @@ int main() {
 		case 4:
 			cout << "DEAPTH FIRST SEARCH RESULT\n";
 			cout << "--------------------------\n\n";
-			g.BFT();
+			g.DFT();
 			break;
 		case 5:
 			exit = true;
@@ -162,3 +164,5 @@ int main() {
 		}
 	} while (!exit);
 }
+
+
